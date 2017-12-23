@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Расчёт каскада биохимических реакций</title>
+</head>
+<body>
+    <div>
+        <form id="form">
+            <p>
+                <label for="val-1">S<sub>1</sub></label>
+                <input id="val-1" type="number">
+            </p>
+            <p>
+                <label for="val-2">S<sub>N+1</sub></label>
+                <input id="val-2" type="number">
+            </p>
+            <p>
+                <label title="Кинетическая константа 1" for="val-3">K<sub>S</sub></label>
+                <input id="val-3" type="number">
+            </p>
+            <p>
+                <label title="Число стадий" for="val-4">N</label>
+                <input id="val-4" type="number">
+            </p>
+            <p>
+                <label title="Кинетическая константа 2" for="val-5">&mu;<sub>max</sub></label>
+                <input id="val-5" type="number" step="any">
+            </p>
+            <p>
+                <label title="Коэффициент выхода" for="val-6">y</label>
+                <input id="val-6" type="number" step="any">
+            </p>
+            <input id="calculate" type="button" value="Запуск" onclick="performCalculation();">
+            <input id="clear" type="button" value="Очистить" onclick="clearData();">
+        </form>
+    </div>
+    <div id="result">
+
+    </div>
+</body>
+<script type="text/javascript">
+    function clearData() {
+        document.getElementById('form').reset();
+        document.getElementById('result').innerHTML = '';
+    }
+
+    function performCalculation() {
+        if (validate()) {
+            var values = compute();
+            print(values);
+            return;
+        }
+        alert('Заполните все поля!');
+    }
+
+    function compute() {
+        var S1 = +document.getElementById('val-1').value,
+            SN = +document.getElementById('val-2').value,
+            Ks = +document.getElementById('val-3').value,
+            N = +document.getElementById('val-4').value,
+            mu = +document.getElementById('val-5').value;
+            // y = document.getElementById('val-6').value;
+
+        var step = Math.floor((Math.floor(SN) - Math.floor(S1)) / N),
+            SS = [],
+            returnValues = [];
+
+        var iter;
+        SS.push(S1);
+        for (iter = 1; iter < N; iter++) {
+            SS[iter] = SS[iter - 1] + step;
+        }
+        SS.push(SN);
+
+        var tempValue;
+        for (iter = 0; iter < N; iter++) {
+            tempValue = (Ks + SS[iter]) * (SS[iter + 1] - SS[iter]) / (mu * SS[iter] * (SN - SS[iter]));
+            returnValues.push(tempValue);
+        }
+
+        return returnValues;
+    }
+
+    function validate() {
+        var elements = document.querySelectorAll('#form input[type="number"]');
+        for (var i = 0; i < elements.length; ++i) {
+            if (elements[i].value === '') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function print(values) {
+        var resutlHtml = document.getElementById('result');
+        resutlHtml.innerHTML = '';
+        for (var i = 0; i < values.length; i++) {
+            resutlHtml.insertAdjacentHTML('beforeend', '<p>'+(i + 1) + ': ' + values[i]+'</p>');
+        }
+    }
+</script>
+</html>
